@@ -123,7 +123,7 @@ export default {
 
     onMounted(async () => {
       await challengeStore.loadChallenges()
-      console.log('값 잘 넘어오나 확인', challenges.value)
+      //console.log('값 잘 넘어오나 확인', challenges.value)
 
     })
 
