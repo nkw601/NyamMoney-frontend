@@ -25,6 +25,7 @@
       </div>
 
       <button
+        v-if="canCreate"
         class="px-4 py-2 bg-orange-500 text-white rounded-full shadow-sm hover:bg-orange-600 transition"
         @click="goNewPost"
       >
@@ -70,7 +71,7 @@
 </template>
 
 <script>
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import { useBoardStore } from '@/stores/board.store'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
@@ -95,6 +96,7 @@ export default {
 
     const { posts, loading, hasNext } = storeToRefs(boardStore)
     const { isAuthenticated } = storeToRefs(authStore)
+    const userRole = computed(() => authStore.role)
 
     const sortOptions = [
       { value: 'comments', label: '댓글순' },
@@ -186,7 +188,17 @@ export default {
       })
     }
 
+    const isNoticeBoard = computed(() =>
+      Number(props.boardId) === 4 ||
+      (props.title && String(props.title).includes('공지'))
+    )
+    const canCreate = computed(() =>
+      isAuthenticated.value &&
+      (!isNoticeBoard.value || userRole.value === 'ADMIN')
+    )
+
     const goNewPost = () => {
+      if (!canCreate.value) return
       router.push({
         name: 'newPost',
         params: {
@@ -203,6 +215,7 @@ export default {
       sentinel,
       goDetail,
       goNewPost,
+      canCreate,
     }
   },
 }
