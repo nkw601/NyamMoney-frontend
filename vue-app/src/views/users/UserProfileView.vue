@@ -71,11 +71,9 @@
 
           <!-- -------------------- RIGHT (Posts) : 데스크톱에서 2행 span -------------------- -->
           <div class="space-y-6 order-3 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:row-span-2 lg:h-full lg:min-h-0">
-            <div class="flex items-start justify-between">
-              <div class="flex flex-col gap-2">
-                <div>
-                  <h2 class="text-2xl font-bold">Posts</h2>
-                </div>
+            <div class="flex flex-col gap-2">
+              <h2 class="text-2xl font-bold">Posts</h2>
+              <div class="flex items-center justify-between gap-4 flex-wrap">
                 <div class="flex items-center gap-2">
                   <button
                     v-for="tab in mainTabs"
@@ -92,15 +90,13 @@
                     {{ tab.label }}
                   </button>
                 </div>
-              </div>
 
-              <span class="inline-flex items-center px-3 py-1 rounded-full bg-white border border-border text-sm shadow-sm">
-                총 {{ activeMainTab === 'commented' ? totalCommented : totalPosts }}개
-              </span>
+              </div>
             </div>
 
             <div class="space-y-4">
-              <div class="flex flex-wrap gap-2">
+              <div class="flex items-center justify-between gap-3 flex-wrap">
+                <div class="flex flex-wrap gap-2">
                 <button
                   v-for="tab in boardTabs"
                   :key="tab.key"
@@ -115,6 +111,10 @@
                 >
                   {{ tab.label }}
                 </button>
+              </div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-white border border-border text-sm shadow-sm">
+                  총 {{ activeMainTab === 'commented' ? totalCommented : totalPosts }}개
+                </span>
               </div>
 
               <div class="border border-border bg-white rounded-lg shadow-sm h-full lg:min-h-0 flex flex-col">
@@ -168,6 +168,51 @@
                   <div ref="sentinel" class="h-8"></div>
                 </div>
               </div>
+            </div>
+
+            <!-- 내가 참여한 챌린지: Posts 아래로 이동 -->
+            <div class="space-y-3">
+              <div>
+                <h2 class="text-2xl font-bold">Challenge</h2>
+              </div>
+              <UiCard wrapperClass="border border-border bg-white shadow-sm">
+                <div class="space-y-3">
+                  <div v-if="!myChallenges.length" class="text-sm text-gray-500">
+                    참여 중인 챌린지가 없습니다.
+                  </div>
+
+                  <div v-else class="space-y-2">
+                    <div
+                      v-for="c in myChallenges"
+                      :key="c.challengeId"
+                      class="flex items-center justify-between p-3 rounded-lg border border-border bg-gray-50"
+                    >
+                      <div class="space-y-1">
+                        <p class="text-sm font-medium">{{ c.title }}</p>
+                        <div class="flex items-center gap-2">
+                          <span
+                            class="px-2 py-0.5 text-xs rounded-full"
+                            :class="statusStyleMap[c.status]?.badge"
+                          >
+                            {{ statusStyleMap[c.status]?.label }}
+                          </span>
+
+                          <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-700">
+                            참여 중
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        class="text-xs text-primary hover:underline"
+                        @click="goChallengeDetail(c.challengeId)"
+                      >
+                        보기 →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </UiCard>
             </div>
           </div>
 
@@ -225,54 +270,6 @@
 
             </div>
           </UiCard>
-
-          <!-- -------------------- LEFT / BOTTOM (내 챌린지) -------------------- -->
-          <UiCard
-            wrapperClass="order-2 border border-border bg-white shadow-sm"
-            class="lg:col-start-1"
-          >
-            <div class="space-y-3">
-              <p class="text-sm font-semibold text-gray-700">내 챌린지</p>
-
-              <div v-if="!myChallenges.length" class="text-sm text-gray-500">
-                참여 중인 챌린지가 없습니다.
-              </div>
-
-              <div v-else class="space-y-2">
-                <div
-                  v-for="c in myChallenges"
-                  :key="c.challengeId"
-                  class="flex items-center justify-between p-3 rounded-lg border border-border bg-gray-50"
-                >
-                  <div class="space-y-1">
-                    <p class="text-sm font-medium">{{ c.title }}</p>
-                    <div class="flex items-center gap-2">
-                      <span
-                        class="px-2 py-0.5 text-xs rounded-full"
-                        :class="statusStyleMap[c.status]?.badge"
-                      >
-                        {{ statusStyleMap[c.status]?.label }}
-                      </span>
-
-                      <span class="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-700">
-                        참여 중
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    class="text-xs text-primary hover:underline"
-                    @click="goChallengeDetail(c.challengeId)"
-                  >
-                    보기 →
-                  </button>
-                </div>
-              </div>
-            </div>
-          </UiCard>
-
-
-
 
         </div>
       </div>
