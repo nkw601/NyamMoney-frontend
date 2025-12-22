@@ -18,7 +18,7 @@
           + 챌린지 생성
         </button>
 
-        <div class="ml-auto">
+        <div class="ml-auto flex gap-2">
           <button
             @click="toggleActiveOnly"
             :class="[
@@ -30,6 +30,18 @@
             type="button"
           >
             진행중만 보기
+          </button>
+          <button
+            @click="toggleUpcomingOnly"
+            :class="[
+              'px-3 py-1.5 text-sm rounded-full border transition-colors',
+              showUpcomingOnly
+                ? 'bg-orange-500 text-white border-orange-500'
+                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+            ]"
+            type="button"
+          >
+            진행 예정만 보기
           </button>
         </div>
       </div>
@@ -115,6 +127,7 @@ export default {
     const challengeStore = useChallengeStore()
     const { challenges, loading } = storeToRefs(challengeStore)
     const showActiveOnly = ref(false)
+    const showUpcomingOnly = ref(false)
     const page = ref(0)
     const size = ref(12)
     const sentinel = ref(null)
@@ -143,11 +156,21 @@ export default {
       },
     }
 
-    const filteredChallenges = computed(() =>
-      showActiveOnly.value
-        ? challenges.value.filter((c) => c.status === 'ACTIVE')
-        : challenges.value
-    )
+    const filteredChallenges = computed(() => {
+      // 둘 다 켜지면 ACTIVE, UPCOMING 모두 허용
+      if (showActiveOnly.value && showUpcomingOnly.value) {
+        return challenges.value.filter((c) =>
+          c.status === 'ACTIVE' || c.status === 'UPCOMING'
+        )
+      }
+      if (showActiveOnly.value) {
+        return challenges.value.filter((c) => c.status === 'ACTIVE')
+      }
+      if (showUpcomingOnly.value) {
+        return challenges.value.filter((c) => c.status === 'UPCOMING')
+      }
+      return challenges.value
+    })
 
     const visibleChallenges = computed(() =>
       filteredChallenges.value.slice(0, (page.value + 1) * size.value)
@@ -162,10 +185,16 @@ export default {
     }
 
     const loadMore = () => {
-      if (loading.value) return
       const total = filteredChallenges.value.length
       const canLoad = (page.value + 1) * size.value < total
       if (canLoad) page.value += 1
+    }
+
+    const tryLoadMoreIfVisible = () => {
+      if (!sentinel.value || loading.value) return
+      const rect = sentinel.value.getBoundingClientRect()
+      const inView = rect.top <= window.innerHeight + 160
+      if (inView) loadMore()
     }
 
     const setupObserver = async () => {
@@ -182,6 +211,9 @@ export default {
         { root: null, rootMargin: '160px', threshold: 0 }
       )
       observer.observe(sentinel.value)
+
+      // 초기 로드 완료 후 바로 보이는 경우 처리
+      tryLoadMoreIfVisible()
     }
 
     onMounted(async () => {
@@ -197,12 +229,29 @@ export default {
     watch(challenges, async () => {
       page.value = 0
       await nextTick()
+      tryLoadMoreIfVisible()
     })
 
     watch(showActiveOnly, async () => {
       page.value = 0
       await nextTick()
+      tryLoadMoreIfVisible()
     })
+
+    watch(showUpcomingOnly, async () => {
+      page.value = 0
+      await nextTick()
+      tryLoadMoreIfVisible()
+    })
+
+    watch(
+      () => loading.value,
+      (isLoading) => {
+        if (!isLoading) {
+          tryLoadMoreIfVisible()
+        }
+      }
+    )
 
     const goDetail = (challengeId) => {
       router.push({
@@ -218,6 +267,9 @@ export default {
     const toggleActiveOnly = () => {
       showActiveOnly.value = !showActiveOnly.value
     }
+    const toggleUpcomingOnly = () => {
+      showUpcomingOnly.value = !showUpcomingOnly.value
+    }
 
     return {
       loading,
@@ -226,7 +278,9 @@ export default {
       goCreate,
       visibleChallenges,
       toggleActiveOnly,
+      toggleUpcomingOnly,
       showActiveOnly,
+      showUpcomingOnly,
       sentinel,
     }
   },
