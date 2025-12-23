@@ -13,11 +13,10 @@
     </div>
 
     <div v-else class="space-y-3">
-      <RouterLink
+      <div
         v-for="transaction in displayed"
         :key="transaction.transactionId"
-        :to="{ name: 'TransactionDetail', params: { transactionId: transaction.transactionId } }"
-        class="flex items-center p-2 rounded-lg hover:bg-accent/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/40"
+        class="flex items-center p-2 rounded-lg hover:bg-accent/50 transition-colors"
       >
         <div class="flex-1">
           <p class="text-sm font-medium text-foreground">
@@ -35,7 +34,7 @@
             {{ transaction.type === 'refund' ? '⬆️' : '⬇️' }}
           </span>
         </div>
-      </RouterLink>
+      </div>
     </div>
 
     <button
@@ -49,7 +48,6 @@
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
-import { RouterLink } from 'vue-router'
 import UiSpinner from './ui/Spinner.vue'
 
 type TransactionDisplay = {
@@ -62,7 +60,7 @@ type TransactionDisplay = {
 
 export default defineComponent({
   name: 'RecentTransactions',
-  components: { UiSpinner, RouterLink },
+  components: { UiSpinner },
   emits: ['viewAll'],
   props: {
     transactions: {

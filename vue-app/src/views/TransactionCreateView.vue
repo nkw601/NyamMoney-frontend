@@ -207,7 +207,6 @@ export default defineComponent({
     }
 
     const submit = async () => {
-      if (loading.value) return
       error.value = ''
       success.value = false
       try {

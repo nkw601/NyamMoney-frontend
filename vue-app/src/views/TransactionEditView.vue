@@ -219,7 +219,7 @@ export default defineComponent({
         amount: Number(form.amount),
         occurredAt: form.occurredAt,
         categoryId: Number(form.categoryId),
-        merchantName: form.merchantName || null,
+        merchantNameRaw: form.merchantName || null,
         memo: form.memo || null,
         impulseFlag: Boolean(form.impulseFlag),
         isRefund: Boolean(form.isRefund),
