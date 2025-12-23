@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import Cookies from 'js-cookie'
 import { login as loginApi, logout as logoutApi } from '@/services/auth.service'
 
 // 안전한 JWT payload 디코딩 함수(atob 대체)
@@ -28,12 +27,14 @@ export const useAuthStore = defineStore('auth', {
     role: null,
     isAuthenticated: false,
     loading: false,
+    accessToken: null,
+    refreshToken: null,
   }),
 
   actions: {
-    // 브라우저 새로고침 시 토큰에서 상태 복구
+    // 메모리에 있는 accessToken에서 상태 복구
     setAuthFromToken() {
-      const token = Cookies.get('accessToken')
+      const token = this.accessToken
       if (!token) {
         this.$resetAuth()
         return
@@ -52,6 +53,11 @@ export const useAuthStore = defineStore('auth', {
       this.role = payload.role
     },
 
+    setTokens(accessToken, refreshToken) {
+      this.accessToken = accessToken ?? null
+      this.refreshToken = refreshToken ?? null
+    },
+
     async login({ loginId, password }) {
       this.loading = true
       try {
@@ -63,15 +69,7 @@ export const useAuthStore = defineStore('auth', {
         this.nickname = data.nickname
         this.isAuthenticated = true
         this.role = data.role
-
-        Cookies.set('accessToken', data.accessToken, {
-          secure: true,
-          sameSite: 'strict',
-        })
-        Cookies.set('refreshToken', data.refreshToken, {
-          secure: true,
-          sameSite: 'strict',
-        })
+        this.setTokens(data.accessToken, data.refreshToken)
       } finally {
         this.loading = false
       }
@@ -79,16 +77,14 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       try {
-        const refreshToken = Cookies.get('refreshToken')
-        if (refreshToken) {
-          await logoutApi(refreshToken)
+        if (this.refreshToken) {
+          await logoutApi(this.refreshToken)
         }
       } catch (e) {
         console.warn('Server logout failed — ignored.')
       }
 
-      Cookies.remove('accessToken')
-      Cookies.remove('refreshToken')
+      this.setTokens(null, null)
       this.$resetAuth()
     },
 
@@ -99,6 +95,8 @@ export const useAuthStore = defineStore('auth', {
       this.isAuthenticated = false
       this.loading = false
       this.role = null
+      this.accessToken = null
+      this.refreshToken = null
     },
   },
 })
