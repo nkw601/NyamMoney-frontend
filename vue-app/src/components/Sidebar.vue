@@ -30,14 +30,14 @@
   isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
 ]"
 >
-      <div class="border-b border-border bg-gradient-to-br from-primary/5 to-secondary/5">
+      <div class="bg-transparent">
         <div :class="['flex h-16 items-center gap-3 px-4', isCollapsed && 'justify-center px-2']">
           <template v-if="!isCollapsed">
             <RouterLink to="/" class="flex items-center gap-2 font-bold">
-              <div class="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <div class="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center dark:bg-white dark:text-primary bg-primary/10 text-primary">
                 <span class="text-xl">🐱</span>
               </div>
-              <span class="text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">YumMoney</span>
+              <span class="text-lg text-foreground dark:text-white">냠  머니</span>
             </RouterLink>
           </template>
           <button
@@ -137,4 +137,3 @@ export default defineComponent({
 
 <style scoped>
 </style>
-

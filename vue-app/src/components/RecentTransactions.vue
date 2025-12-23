@@ -31,9 +31,6 @@
           <span :class="['text-sm font-semibold', amountClass(transaction.type)]">
             {{ amountPrefix(transaction.type) }}{{ formatAmount(transaction.amount) }}원
           </span>
-          <span class="h-4 w-4">
-            {{ transaction.type === 'refund' ? '⬆️' : '⬇️' }}
-          </span>
         </div>
       </RouterLink>
     </div>
@@ -93,11 +90,14 @@ export default defineComponent({
     }
 
     const amountClass = (type?: string) => {
-      return type === 'refund' || type === 'income' ? 'text-primary' : 'text-secondary'
+      if (type === 'refund') return 'text-muted-foreground line-through'
+      if (type === 'income') return 'text-primary'
+      return 'text-secondary'
     }
 
     const amountPrefix = (type?: string) => {
-      return type === 'refund' || type === 'income' ? '+' : '-'
+      if (type === 'income') return '+'
+      return '-'
     }
 
     return {

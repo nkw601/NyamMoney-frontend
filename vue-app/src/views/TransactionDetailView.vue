@@ -63,7 +63,12 @@
           <div class="p-4 grid gap-3 md:grid-cols-2">
             <div>
               <p class="text-xs text-muted-foreground">금액</p>
-              <p :class="['text-xl font-semibold', detail.isRefund ? 'text-primary' : 'text-secondary']">
+              <p
+                :class="[
+                  'text-xl font-semibold',
+                  detail.isRefund ? 'text-muted-foreground line-through' : detail.transactionType === 'INCOME' ? 'text-primary' : 'text-secondary',
+                ]"
+              >
                 {{ amountPrefix(detail) }}{{ formatCurrency(detail.amount) }}원
               </p>
             </div>
@@ -124,7 +129,7 @@ export default defineComponent({
     }
     const amountPrefix = (tx: any) => {
       const rawType = (tx?.transactionType || tx?.type || '').toString().toLowerCase()
-      if (tx?.isRefund || rawType === 'income') return '+'
+      if (rawType === 'income') return '+'
       return '-'
     }
 

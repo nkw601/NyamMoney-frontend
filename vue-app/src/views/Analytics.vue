@@ -13,9 +13,23 @@
         <template #header>
           <div class="px-4 pt-4 flex flex-wrap items-center gap-3">
             <div class="flex items-center gap-2">
-              <input v-model="filters.from" type="date" class="border border-border rounded-md p-2 text-sm" />
+              <input
+                v-model="filters.from"
+                type="date"
+                class="border border-border rounded-md p-2 text-sm
+                      bg-background text-foreground
+                      dark:bg-background dark:text-foreground
+                      [color-scheme:dark]"
+              />
               <span class="text-xs text-muted-foreground">~</span>
-              <input v-model="filters.to" type="date" class="border border-border rounded-md p-2 text-sm" />
+              <input
+                v-model="filters.to"
+                type="date"
+                class="border border-border rounded-md p-2 text-sm
+                      bg-background text-foreground
+                      dark:bg-background dark:text-foreground
+                      [color-scheme:dark]"
+              />
             </div>
             <button
               class="px-3 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 transition"
@@ -277,11 +291,14 @@ export default defineComponent({
 
     const amountPrefix = (tx: TransactionItem) => {
       const type = tx.type || resolveTransactionType(tx)
-      return type === 'income' || type === 'refund' ? '+' : '-'
+      if (type === 'income') return '+'
+      return '-'
     }
     const amountClass = (tx: TransactionItem) => {
       const type = tx.type || resolveTransactionType(tx)
-      return type === 'income' || type === 'refund' ? 'text-primary' : 'text-secondary'
+      if (type === 'refund') return 'text-muted-foreground line-through'
+      if (type === 'income') return 'text-primary'
+      return 'text-secondary'
     }
 
     const validateRange = () => {

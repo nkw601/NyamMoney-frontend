@@ -216,7 +216,9 @@
             />
             <div class="flex items-center justify-between text-sm">
               <span class="text-muted-foreground">총 지출</span>
-              <span class="font-semibold">{{ formatCurrency(monthlyExpense) }}원</span>
+              <span class="font-semibold text-foreground">
+                {{ formatCurrency(monthlyExpense) }}원
+              </span>
             </div>
             <div class="flex items-center justify-between text-sm">
               <span class="text-muted-foreground">충동 소비</span>

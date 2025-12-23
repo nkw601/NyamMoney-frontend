@@ -14,7 +14,7 @@
       </div>
     </div>
     <div v-if="hasData" class="h-[240px] w-full relative">
-      <svg :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`" preserveAspectRatio="none" class="w-full h-full">
+      <svg :viewBox="`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`" preserveAspectRatio="xMidYMid meet" class="w-full h-full">
         <defs>
           <mask id="expense-mask">
             <rect :width="SVG_WIDTH" :height="SVG_HEIGHT" fill="white" />
