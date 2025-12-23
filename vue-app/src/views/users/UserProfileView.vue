@@ -1,7 +1,8 @@
 ﻿<template>
   <Layout>
-    <div>
-      <div class="max-w-6xl mx-auto p-8 space-y-8">
+    <div class="p-6 space-y-6">
+      <PageHeader title="프로필" description="사용자 프로필을 확인하세요." />
+      <div class="max-w-6xl mx-auto space-y-8">
 
         <!-- ✅ 데스크톱: 2열 + 2행 / 모바일: 자동 세로 -->
         <div class="grid gap-8 lg:grid-cols-[320px_1fr] lg:grid-rows-[auto_1fr] lg:items-stretch">
@@ -282,6 +283,12 @@
 import { computed, reactive, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import Layout from '@/components/Layout.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import UiAvatar from '@/components/ui/Avatar.vue'
+import UiButton from '@/components/ui/Button.vue'
+import UiCard from '@/components/ui/Card.vue'
+import { useAuthStore } from '@/stores/auth'
 
 import { fetchUser, fetchUserPosts, fetchUserComments } from '@/services/user.service'
 import {
@@ -328,12 +335,6 @@ const goChallengeDetail = (challengeId) => {
   })
 }
 // --------------- 여기까지 챌린지 --------------------
-
-import { useAuthStore } from '@/stores/auth'
-import Layout from '../../components/Layout.vue'
-import UiAvatar from '../../components/ui/Avatar.vue'
-import UiButton from '../../components/ui/Button.vue'
-import UiCard from '../../components/ui/Card.vue'
 
 const toStr = (v) => (v === null || v === undefined ? '' : String(v))
 

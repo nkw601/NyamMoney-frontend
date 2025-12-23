@@ -1,6 +1,6 @@
 <template>
   <Layout>
-    <div class="p-6 space-y-8">
+    <div class="p-6 space-y-6">
       <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 class="text-3xl font-bold">Dashboard</h1>

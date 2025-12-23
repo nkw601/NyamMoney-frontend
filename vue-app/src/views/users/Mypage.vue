@@ -1,7 +1,7 @@
 <template>
   <Layout>
-    <div class="container mx-auto py-10">
-      <h1 class="text-3xl font-bold mb-6">My Page</h1>
+    <div class="p-6 space-y-6 max-w-5xl mx-auto">
+      <PageHeader title="My Page" description="내 프로필과 설정을 관리하세요." />
 
       <div>
         <div class="flex gap-2 mb-4">
@@ -239,11 +239,12 @@
 import { defineComponent, reactive, ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import Layout from '../../components/Layout.vue'
-import UiInput from '../../components/ui/Input.vue'
-import UiSelect from '../../components/ui/Select.vue'
-import UiSwitch from '../../components/ui/Switch.vue'
-import UiCheckbox from '../../components/ui/Checkbox.vue'
+import Layout from '@/components/Layout.vue'
+import PageHeader from '@/components/PageHeader.vue'
+import UiInput from '@/components/ui/Input.vue'
+import UiSelect from '@/components/ui/Select.vue'
+import UiSwitch from '@/components/ui/Switch.vue'
+import UiCheckbox from '@/components/ui/Checkbox.vue'
 import {
   fetchMe,
   updateUser,
@@ -254,7 +255,7 @@ import {
 
 export default defineComponent({
   name: 'MypageView',
-  components: { Layout, UiInput, UiSelect, UiSwitch, UiCheckbox },
+  components: { Layout, PageHeader, UiInput, UiSelect, UiSwitch, UiCheckbox },
   setup() {
     const router = useRouter()
     const auth = useAuthStore()

@@ -1,13 +1,8 @@
 <template>
   <Layout>
     <div class="p-6 space-y-6">
-      <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 class="text-2xl font-bold">거래 내역</h1>
-          <p class="text-sm text-muted-foreground">기간을 선택해 지출과 시발비용을 확인하세요.</p>
-        </div>
-        <div class="text-xs text-muted-foreground">총 {{ totalCount }}건</div>
-      </div>
+      <PageHeader title="거래 내역" description="기간을 선택해 지출과 시발비용을 확인하세요.">
+      </PageHeader>
 
       <UiCard>
         <template #header>
@@ -35,32 +30,40 @@
               class="px-3 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 transition"
               @click="applyFilters"
             >
-              적용
+              검색
             </button>
             <span v-if="rangeLabel" class="text-xs text-muted-foreground">기간: {{ rangeLabel }}</span>
           </div>
         </template>
         <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <ExpenseIncomeSummary
-            class="md:col-span-2 lg:col-span-2"
-            label="총 지출 / 총 수입"
-            :expense="summary.totalExpense"
-            :income="summary.totalIncome"
-          />
-          <div class="p-4 rounded-md border border-border bg-card">
-            <p class="text-xs text-muted-foreground mb-1">총 시발비용</p>
-            <p class="text-2xl font-semibold text-primary">{{ formatCurrency(summary.totalImpulseExpense) }}원</p>
-          </div>
-          <div class="p-4 rounded-md border border-border bg-card">
-            <p class="text-xs text-muted-foreground mb-1">시발비용 비중</p>
-            <p class="text-2xl font-semibold">
-              {{ summary.totalExpense ? Math.round((summary.totalImpulseExpense / summary.totalExpense) * 100) : 0 }}%
-            </p>
-          </div>
-          <div class="p-4 rounded-md border border-border bg-card">
-            <p class="text-xs text-muted-foreground mb-1">거래 건수</p>
-            <p class="text-2xl font-semibold">{{ totalCount }}건</p>
-          </div>
+          <UiCard>
+            <div class="p-4 space-y-1">
+              <p class="text-xs text-muted-foreground">총 수입</p>
+              <p class="text-2xl font-semibold text-foreground">{{ formatCurrency(summary.totalIncome) }}원</p>
+            </div>
+          </UiCard>
+
+          <UiCard>
+            <div class="p-4 space-y-1">
+              <p class="text-xs text-muted-foreground">총 지출</p>
+              <p class="text-2xl font-semibold text-secondary">{{ formatCurrency(summary.totalExpense) }}원</p>
+            </div>
+          </UiCard>
+
+          <UiCard>
+            <div class="p-4 space-y-1">
+              <p class="text-xs text-muted-foreground">총 냠비용</p>
+              <p class="text-2xl font-semibold text-primary">{{ formatCurrency(summary.totalImpulseExpense) }}원</p>
+            </div>
+          </UiCard>
+          <UiCard>
+            <div class="p-4 space-y-1">
+              <p class="text-xs text-muted-foreground">냠비용 비중</p>
+              <p class="text-2xl font-semibold">
+                {{ summary.totalExpense ? Math.round((summary.totalImpulseExpense / summary.totalExpense) * 100) : 0 }}%
+              </p>
+            </div>
+          </UiCard>
         </div>
       </UiCard>
 
@@ -163,7 +166,7 @@
 import { computed, defineComponent, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Layout from '@/components/Layout.vue'
-import ExpenseIncomeSummary from '@/components/ExpenseIncomeSummary.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import UiCard from '@/components/ui/Card.vue'
 import UiSpinner from '@/components/ui/Spinner.vue'
 import { fetchTransactionSummary, fetchTransactions } from '@/services/transaction.service'
@@ -217,7 +220,7 @@ export default defineComponent({
   name: 'AnalyticsView',
   components: {
     Layout,
-    ExpenseIncomeSummary,
+    PageHeader,
     UiCard,
     UiSpinner,
   },

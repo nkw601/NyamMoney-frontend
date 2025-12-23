@@ -23,7 +23,7 @@ import TransactionDetailView from '../views/TransactionDetailView.vue'
 import TransactionEditView from '../views/TransactionEditView.vue'
 
 const routes = [
-  { path: '/', redirect: '/login' },
+  { path: '/', redirect: '/dashboard' },
   { path: '/login', name: 'Login', component: Login },
   { path: '/signup', name: 'Signup', component: Signup },
   { path: '/help', name: 'Help', component: Help },
@@ -36,13 +36,23 @@ const routes = [
   { path: '/transactions/new', name: 'TransactionCreate', component: TransactionCreateView, meta: { requiresAuth: true } },
   { path: '/transactions/:transactionId', name: 'TransactionDetail', component: TransactionDetailView, meta: { requiresAuth: true }, props: true },
   { path: '/transactions/:transactionId/edit', name: 'TransactionEdit', component: TransactionEditView, meta: { requiresAuth: true }, props: true },
-  { path: '/invoices', name: 'Invoices', component: Invoices, meta: { requiresAuth: true } },
-  { path: '/payments', name: 'Payments', component: Payments, meta: { requiresAuth: true } },
-  { path: '/members', name: 'Members', component: Members, meta: { requiresAuth: true } },
-  { path: '/permissions', name: 'Permissions', component: Permissions, meta: { requiresAuth: true } },
-  { path: '/chat', name: 'Chat', component: Chat, meta: { requiresAuth: true } },
+  // { path: '/invoices', name: 'Invoices', component: Invoices, meta: { requiresAuth: true } },
+  // { path: '/payments', name: 'Payments', component: Payments, meta: { requiresAuth: true } },
+  // { path: '/members', name: 'Members', component: Members, meta: { requiresAuth: true } },
+  // { path: '/permissions', name: 'Permissions', component: Permissions, meta: { requiresAuth: true } },
+  // { path: '/chat', name: 'Chat', component: Chat, meta: { requiresAuth: true } },
   { path: '/profile', name: 'UserProfile', component: UserProfileView, meta: { requiresAuth: true } },
+  {
+    path: '/profile/:userId',
+    name: 'UserProfileParam',
+    component: UserProfileView,
+    meta: { requiresAuth: true },
+    props: (route) => ({
+      userId: Number(route.params.userId),
+    }),
+  },
   { path: '/follows', name: 'FollowList', component: FollowList, meta: { requiresAuth: true } },
+  { path: '/challenges', name: 'challengeList', component: ChallengeListView, meta: { requiresAuth: true } },
   {
     path: '/boards/:boardId/posts/:postId/edit',
     name: 'postEdit',
@@ -51,6 +61,12 @@ const routes = [
       boardId: Number(route.params.boardId),
       postId: Number(route.params.postId),
     }),
+  },
+  {
+    path: '/organization/:pathMatch(.*)*',
+    redirect: (to) => {
+      return { path: to.fullPath.replace('/organization', '/boards') }
+    },
   },
   {
     path: '/challenges/:challengeId',
@@ -66,14 +82,14 @@ const routes = [
     component: () => import('@/views/challenges/ChallengeCreateView.vue'),
   },
   {
-    path: '/organization',
+    path: '/boards',
     name: 'Organization',
     redirect: { name: 'boardPosts', params: { boardId: 1 } },
     component: Organization,
     meta: { requiresAuth: true },
     children: [
       {
-        path: 'boards/:boardId',
+        path: ':boardId',
         name: 'boardPosts',
         component: () => import('@/views/boards/BoardPostsView.vue'),
         props: (route) => ({
@@ -81,13 +97,13 @@ const routes = [
         }),
       },
       {
-        path: 'boards/:boardId/posts/new',
+        path: ':boardId/posts/new',
         name: 'newPost',
         component: () => import('@/views/boards/PostCreateView.vue'),
         props: true,
       },
       {
-        path: 'boards/:boardId/posts/:postId',
+        path: ':boardId/posts/:postId',
         name: 'postDetail',
         component: () => import('@/views/posts/PostDetailView.vue'),
         props: true,

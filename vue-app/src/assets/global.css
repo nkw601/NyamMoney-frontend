@@ -118,4 +118,7 @@ body,
 
 body {
   margin: 0;
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
