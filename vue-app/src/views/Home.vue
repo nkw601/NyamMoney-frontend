@@ -79,7 +79,37 @@
           <div class="space-y-3">
             <p class="text-sm font-semibold">총 지출</p>
             <div class="flex items-center gap-4">
-              <div class="relative h-32 w-32 rounded-full" :style="pieStyle(expenseSegments)"></div>
+              <div class="relative inline-block donut-wrapper">
+                <svg viewBox="0 0 36 36" class="h-32 w-32">
+                  <circle cx="18" cy="18" r="15" fill="hsl(var(--card))" stroke="hsl(var(--muted))" stroke-width="6" />
+                  <circle
+                    v-for="arc in expenseArcs"
+                    :key="arc.id"
+                    cx="18"
+                    cy="18"
+                    r="15"
+                    fill="none"
+                    :stroke="arc.color"
+                    stroke-width="6"
+                    stroke-linecap="butt"
+                    :stroke-dasharray="`${arc.percent} ${100 - arc.percent}`"
+                    :stroke-dashoffset="arc.offset"
+                    @mouseenter="onArcEnter(arc, $event, 'expense')"
+                    @mousemove="onArcEnter(arc, $event, 'expense')"
+                    @mouseleave="hideTooltip"
+                    style="transition: opacity 0.15s ease"
+                  />
+                  <circle cx="18" cy="18" r="10" fill="hsl(var(--card))" />
+                </svg>
+                <div
+                  v-if="tooltip.visible && tooltip.type === 'expense'"
+                  class="absolute z-10 rounded-md bg-card border border-border px-3 py-2 text-xs shadow-sm"
+                  :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
+                >
+                  <div class="font-semibold">{{ tooltip.label }}</div>
+                  <div class="text-muted-foreground">{{ formatCurrency(tooltip.amount) }}원 · {{ tooltip.percent }}%</div>
+                </div>
+              </div>
               <div class="flex-1 space-y-2">
                 <template v-if="expenseSegments.length">
                   <div
@@ -104,7 +134,37 @@
           <div class="space-y-3">
             <p class="text-sm font-semibold">시발비용</p>
             <div class="flex items-center gap-4">
-              <div class="relative h-32 w-32 rounded-full" :style="pieStyle(impulseSegments)"></div>
+              <div class="relative inline-block donut-wrapper">
+                <svg viewBox="0 0 36 36" class="h-32 w-32">
+                  <circle cx="18" cy="18" r="15" fill="hsl(var(--card))" stroke="hsl(var(--muted))" stroke-width="6" />
+                  <circle
+                    v-for="arc in impulseArcs"
+                    :key="arc.id"
+                    cx="18"
+                    cy="18"
+                    r="15"
+                    fill="none"
+                    :stroke="arc.color"
+                    stroke-width="6"
+                    stroke-linecap="butt"
+                    :stroke-dasharray="`${arc.percent} ${100 - arc.percent}`"
+                    :stroke-dashoffset="arc.offset"
+                    @mouseenter="onArcEnter(arc, $event, 'impulse')"
+                    @mousemove="onArcEnter(arc, $event, 'impulse')"
+                    @mouseleave="hideTooltip"
+                    style="transition: opacity 0.15s ease"
+                  />
+                  <circle cx="18" cy="18" r="10" fill="hsl(var(--card))" />
+                </svg>
+                <div
+                  v-if="tooltip.visible && tooltip.type === 'impulse'"
+                  class="absolute z-10 rounded-md bg-card border border-border px-3 py-2 text-xs shadow-sm"
+                  :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
+                >
+                  <div class="font-semibold">{{ tooltip.label }}</div>
+                  <div class="text-muted-foreground">{{ formatCurrency(tooltip.amount) }}원 · {{ tooltip.percent }}%</div>
+                </div>
+              </div>
               <div class="flex-1 space-y-2">
                 <template v-if="impulseSegments.length">
                   <div
@@ -169,8 +229,8 @@
               </span>
             </div>
             <div class="flex items-center justify-between text-sm">
-              <span class="text-muted-foreground">?? ??</span>
-              <span class="font-semibold">{{ transactionCount }}?</span>
+              <span class="text-muted-foreground">내역 개수</span>
+              <span class="font-semibold">{{ transactionCount }}개</span>
             </div>
           </div>
         </UiCard>
@@ -244,7 +304,14 @@ const CATEGORY_LABELS: Record<number, string> = {
   10: '기타',
 }
 
-const PIE_COLORS = ['#6366f1', '#22c55e', '#f97316', '#06b6d4', '#a855f7', '#f59e0b', '#ef4444', '#3b82f6', '#84cc16', '#0ea5e9']
+const PRIMARY_PIE_COLOR = '#fed253'
+const NEUTRAL_PIE_COLORS = [
+  'rgba(0,0,0,0.8)',
+  'rgba(0,0,0,0.65)',
+  'rgba(0,0,0,0.5)',
+  'rgba(0,0,0,0.35)',
+  'rgba(0,0,0,0.25)',
+]
 
 type Summary = {
   totalExpense?: number
@@ -258,6 +325,7 @@ type DailySummary = {
   totalImpulseExpense?: number
   totalIncome?: number
   categorySummaries?: CategorySummaryItem[]
+  categoryImpulseSummaries?: CategorySummaryItem[]
 }
 
 type TransactionItem = {
@@ -346,47 +414,83 @@ export default defineComponent({
     const monthlyImpulse = computed(() => monthlySummary.value?.totalImpulseExpense ?? 0)
     const monthlyIncome = computed(() => monthlySummary.value?.totalIncome ?? 0)
 
-    const chartData = computed(() =>
-      dailySummary.value.map((item) => {
+    const chartData = computed(() => {
+      const sorted = [...dailySummary.value].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      )
+
+      let accExpense = 0
+      let accImpulse = 0
+      let accIncome = 0
+
+      return sorted.map((item) => {
+        accExpense += item.totalExpense ?? 0
+        accImpulse += item.totalImpulseExpense ?? 0
+        accIncome += item.totalIncome ?? 0
         const d = new Date(item.date)
         const label = `${d.getMonth() + 1}.${String(d.getDate()).padStart(2, '0')}`
         return {
           label,
-          expense: item.totalExpense ?? 0,
-          impulse: item.totalImpulseExpense ?? 0,
-          income: item.totalIncome ?? 0,
+          expense: accExpense,
+          impulse: accImpulse,
+          income: accIncome,
         }
-      }),
-    )
+      })
+    })
 
     const lastFiveDays = computed(() => chartData.value.slice(-5))
 
     const buildTodayCategoryBars = (daily: DailySummary[]): CategoryBar[] => {
       const todayKey = dateKey(new Date())
       const todayEntry = daily.find((item) => dateKey(item.date) === todayKey)
-      const categories = (todayEntry as any)?.categorySummaries ?? (todayEntry as any)?.categories ?? []
-      const rows: CategoryBar[] = []
-      for (let id = 1; id <= 10; id += 1) {
-        const found = Array.isArray(categories)
-          ? categories.find((c: CategorySummaryItem) => Number(c.categoryId ?? c.category) === id)
-          : undefined
-        const amount = found?.amount ?? found?.totalExpense ?? found?.expense ?? 0
-        const impulse =
-          found?.impulse ??
-          found?.impulseAmount ??
-          found?.impulseExpense ??
-          found?.totalImpulse ??
-          found?.totalImpulseExpense ??
-          0
-        if (amount > 0 || impulse > 0) {
-          rows.push({
+      const expenseCats = (todayEntry as any)?.categorySummaries ?? (todayEntry as any)?.categories ?? []
+      const impulseCats = (todayEntry as any)?.categoryImpulseSummaries ?? []
+
+      const map = new Map<number, CategoryBar>()
+
+      if (Array.isArray(expenseCats)) {
+        expenseCats.forEach((c: CategorySummaryItem) => {
+          const id = Number(c.categoryId ?? c.category)
+          if (!id) return
+          const amount = c.amount ?? c.totalExpense ?? c.expense ?? 0
+          const name = c.categoryName ?? c.name ?? CATEGORY_LABELS[id] ?? `카테고리 ${id}`
+          map.set(id, {
             id,
-            name: found?.categoryName ?? found?.name ?? CATEGORY_LABELS[id] ?? `카테고리 ${id}`,
+            name,
             amount,
-            impulse,
+            impulse: map.get(id)?.impulse ?? 0,
           })
-        }
+        })
       }
+
+      if (Array.isArray(impulseCats)) {
+        impulseCats.forEach((c: CategorySummaryItem) => {
+          const id = Number(c.categoryId ?? c.category)
+          if (!id) return
+          const impulse =
+            c.amount ??
+            c.impulseAmount ??
+            c.impulseExpense ??
+            c.totalImpulseExpense ??
+            c.totalImpulse ??
+            c.expense ??
+            0
+          const existing = map.get(id)
+          if (existing) {
+            existing.impulse = impulse
+          } else {
+            const name = c.categoryName ?? c.name ?? CATEGORY_LABELS[id] ?? `카테고리 ${id}`
+            map.set(id, {
+              id,
+              name,
+              amount: 0,
+              impulse,
+            })
+          }
+        })
+      }
+
+      const rows = Array.from(map.values()).filter((r) => r.amount > 0 || r.impulse > 0)
       return rows.sort((a, b) => b.amount - a.amount)
     }
 
@@ -398,12 +502,16 @@ export default defineComponent({
           const amount = item[key] ?? 0
           if (!amount) return null
           const percent = Math.round((amount / total) * 1000) / 10
+          const color =
+            index === 0
+              ? PRIMARY_PIE_COLOR
+              : NEUTRAL_PIE_COLORS[(index - 1) % NEUTRAL_PIE_COLORS.length]
           return {
             id: item.id,
             name: item.name,
             amount,
             percent,
-            color: PIE_COLORS[index % PIE_COLORS.length],
+            color,
           }
         })
         .filter(Boolean) as {
@@ -415,21 +523,46 @@ export default defineComponent({
       }[]
     }
 
-    const pieStyle = (segments: { percent: number; color: string }[]) => {
-      if (!segments.length) return { background: '#e5e7eb' }
-      let current = 0
-      const parts: string[] = []
-      segments.forEach((seg) => {
-        const start = current
-        const end = current + seg.percent
-        parts.push(`${seg.color} ${start}% ${end}%`)
-        current = end
-      })
-      return { background: `conic-gradient(${parts.join(', ')})` }
-    }
-
     const expenseSegments = computed(() => buildSegments(todayCategoryBars.value, 'amount'))
     const impulseSegments = computed(() => buildSegments(todayCategoryBars.value, 'impulse'))
+
+    const buildArcs = (segments: ReturnType<typeof buildSegments>) => {
+      let offset = 0
+      return segments.map((seg) => {
+        const arc = {
+          ...seg,
+          offset: -offset,
+        }
+        offset += seg.percent
+        return arc
+      })
+    }
+
+    const expenseArcs = computed(() => buildArcs(expenseSegments.value))
+    const impulseArcs = computed(() => buildArcs(impulseSegments.value))
+
+    const tooltip = ref({ visible: false, x: 0, y: 0, label: '', amount: 0, percent: 0, type: '' })
+
+    const onArcEnter = (seg: any, event: MouseEvent, type: 'expense' | 'impulse') => {
+      const wrapper = (event.currentTarget as HTMLElement)?.closest('.donut-wrapper') as HTMLElement | null
+      if (!wrapper) return
+      const rect = wrapper.getBoundingClientRect()
+      const x = event.clientX - rect.left + 8
+      const y = event.clientY - rect.top + 8
+      tooltip.value = {
+        visible: true,
+        x,
+        y,
+        label: seg.name,
+        amount: seg.amount,
+        percent: seg.percent,
+        type,
+      }
+    }
+
+    const hideTooltip = () => {
+      tooltip.value = { visible: false, x: 0, y: 0, label: '', amount: 0, percent: 0, type: '' }
+    }
 
     const resolveTransactionType = (tx: TransactionItem): TransactionItem['type'] => {
       const raw = (tx.type || tx.transactionType || '').toString().toLowerCase()
@@ -507,7 +640,11 @@ export default defineComponent({
       todayCategoryBars,
       expenseSegments,
       impulseSegments,
-      pieStyle,
+      expenseArcs,
+      impulseArcs,
+      tooltip,
+      onArcEnter,
+      hideTooltip,
       recentTransactions,
       transactionCount,
       formatCurrency,

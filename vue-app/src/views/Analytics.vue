@@ -224,6 +224,7 @@ export default defineComponent({
     })
 
     const transactions = ref<TransactionItem[]>([])
+    const categorySummaries = ref<CategorySummaryItem[]>([])
     const nextCursor = ref<string | null>(null)
     const hasNext = ref(false)
     const totalCount = ref(0)
@@ -309,6 +310,7 @@ export default defineComponent({
       summary.totalExpense = res.data?.totalExpense ?? 0
       summary.totalImpulseExpense = res.data?.totalImpulseExpense ?? 0
       summary.totalIncome = res.data?.totalIncome ?? 0
+      categorySummaries.value = res.data?.categorySummaries ?? []
     }
 
     const loadTransactions = async (reset = false) => {
@@ -379,6 +381,21 @@ export default defineComponent({
 
     const goDetail = (id: number) => router.push({ name: 'TransactionDetail', params: { transactionId: id } })
 
+    const categoryRows = computed(() =>
+      (categorySummaries.value || []).map((item, idx) => ({
+        key: item.categoryId ?? idx,
+        name: item.categoryName || CATEGORY_LABELS[item.categoryId ?? 0] || '기타',
+        expense: item.totalExpense ?? item.expense ?? item.amount ?? 0,
+      })),
+    )
+
+    const categoryBarWidth = (row: { expense?: number }) => {
+      const max = Math.max(...categoryRows.value.map((r) => r.expense || 0), 0)
+      if (!max) return '0%'
+      const ratio = ((row.expense || 0) / max) * 100
+      return `${ratio.toFixed(1)}%`
+    }
+
     onMounted(async () => {
       await applyFilters()
       setupObserver()
@@ -392,6 +409,7 @@ export default defineComponent({
       filters,
       summary,
       transactions,
+      categoryRows,
       totalCount,
       loading,
       loadingMore,
@@ -401,6 +419,7 @@ export default defineComponent({
       applyFilters,
       formatCurrency,
       formatDate,
+      categoryBarWidth,
       amountPrefix,
       amountClass,
       goDetail,

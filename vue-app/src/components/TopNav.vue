@@ -80,11 +80,13 @@ export default defineComponent({
 
     const auth = useAuthStore()
 
-    const displayName = computed(() => `${auth.nickname} (${auth.loginId})`)
+    const displayName = computed(() => `${auth.nickname || '사용자'} (${auth.loginId || ''})`)
     const userId = computed(() => auth.userId)
 
     // ✅ 이니셜은 닉네임 앞 2글자
-    const initials = computed(() => auth.nickname.slice(0, 2).toUpperCase())
+    const initials = computed(() => (auth.nickname || auth.loginId || '?').slice(0, 2).toUpperCase())
+    const avatar = computed(() => null)
+    const email = computed(() => auth.loginId || '')
 
     function capitalize(s) {
       return s.charAt(0).toUpperCase() + s.slice(1)
@@ -126,6 +128,8 @@ export default defineComponent({
       displayName,
       initials,
       userId,
+      avatar,
+      email,
     }
   },
 })

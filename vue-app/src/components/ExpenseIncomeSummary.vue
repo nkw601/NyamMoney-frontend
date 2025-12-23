@@ -1,15 +1,17 @@
 <template>
   <div class="p-4 rounded-md border border-border bg-card">
     <p v-if="label" class="text-xs text-muted-foreground mb-2">{{ label }}</p>
-    <div class="flex items-baseline gap-3">
-      <div class="flex items-baseline gap-1">
-        <span class="text-[11px] text-muted-foreground">총 지출</span>
-        <span class="text-xl font-semibold text-secondary">{{ expenseText }}원</span>
+    <div class="flex flex-wrap items-baseline gap-x-3 gap-y-2 leading-tight">
+      <div class="flex items-baseline gap-1 min-w-0">
+        <span class="text-[11px] text-muted-foreground shrink-0">총 지출</span>
+        <span class="text-xl font-semibold text-secondary truncate max-w-[110px]">{{ expenseText }}</span>
+        <span class="text-sm font-semibold text-secondary shrink-0">원</span>
       </div>
-      <span class="text-muted-foreground text-xs">/</span>
-      <div class="flex items-baseline gap-1">
-        <span class="text-[11px] text-muted-foreground">총 수입</span>
-        <span class="text-xl font-semibold text-primary">{{ incomeText }}원</span>
+      <span class="text-muted-foreground text-xs shrink-0">/</span>
+      <div class="flex items-baseline gap-1 min-w-0">
+        <span class="text-[11px] text-muted-foreground shrink-0">총 수입</span>
+        <span class="text-xl font-semibold text-primary truncate max-w-[110px]">{{ incomeText }}</span>
+        <span class="text-sm font-semibold text-primary shrink-0">원</span>
       </div>
     </div>
   </div>
