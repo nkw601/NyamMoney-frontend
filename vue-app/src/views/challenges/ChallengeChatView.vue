@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-3">
     <!-- 메시지 목록 -->
-    <div class="h-64 overflow-y-auto border border-border bg-white rounded-md p-3 space-y-2">
+    <div class="chat-body h-64 overflow-y-auto border border-border bg-white rounded-md p-3 space-y-2">
       <div
         v-for="(msg, idx) in messages"
         :key="idx"
@@ -36,7 +36,8 @@
 import {
   connectChallengeChat,
   sendChallengeMessage,
-  disconnectChallengeChat
+  disconnectChallengeChat,
+  fetchChallengeChats
 } from '@/services/challengeChat.service'
 
 export default {
@@ -54,8 +55,12 @@ export default {
     }
   },
 
-  mounted() {
-    console.log('[CHAT] mounted, challengeId =', this.challengeId)
+  async mounted() {
+    //console.log('[CHAT] mounted, challengeId =', this.challengeId)
+    const res = await fetchChallengeChats(this.challengeId)
+    this.messages = res.data
+    this.$nextTick(this.scrollToBottom)
+
     connectChallengeChat(this.challengeId, (message) => {
       this.messages.push(message)
       this.$nextTick(() => {
@@ -79,6 +84,11 @@ export default {
       })
 
       this.input = ''
+    },
+
+    scrollToBottom() {
+        const box = this.$el.querySelector('.chat-body')
+        if (box) box.scrollTop = box.scrollHeight
     }
   }
 }
