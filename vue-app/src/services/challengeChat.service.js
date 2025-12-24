@@ -1,5 +1,6 @@
 import { Client } from '@stomp/stompjs'
 import Cookies from 'js-cookie'
+import api from '@/api/axios'
 
 let stompClient = null
 
@@ -50,4 +51,9 @@ export function disconnectChallengeChat() {
     stompClient = null
     console.log('[WS] disconnected')
   }
+}
+
+// 이전 채팅 내역 조회 (REST)
+export function fetchChallengeChats(challengeId) {
+  return api.get(`/v1/challenges/${challengeId}/chats`)
 }
