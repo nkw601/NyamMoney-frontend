@@ -106,7 +106,7 @@
         <!-- 채팅 -->
         <ChallengeChatView
           v-if="true"
-          :challenge-id="8"
+          :challenge-id="challengeId"
           class="mt-8"
         />
       </div>
@@ -302,6 +302,7 @@ export default {
     })
 
     return {
+      challengeId,
       challenge, loading, goBack,
       canJoin, canCancel, handleJoin, handleCancel, joining,
       goEdit, isCreator,
