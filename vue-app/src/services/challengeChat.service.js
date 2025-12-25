@@ -8,50 +8,32 @@ export function connectChallengeChat(challengeId, onMessage) {
   const token = Cookies.get('accessToken')
   // 고정 도메인으로 HTTPS 기반 WebSocket 연결
   const wsUrl = 'wss://api.nyammoney.kr/ws-challenge-chat'
+  const sockUrl = 'https://api.nyammoney.kr/ws-challenge-chat'
 
-  stompClient = new Client({
-  webSocketFactory: () => new WebSocket(wsUrl),
+    stompClient = new Client({
+    // ✅ WebSocket 대신 SockJS로 연결
+    webSocketFactory: () => new SockJS(sockUrl),
 
-  connectHeaders: {
-    Authorization: `Bearer ${token}`,
-  },
+    connectHeaders: {
+      Authorization: `Bearer ${token}`,
+      authorization: `Bearer ${token}`, // 서버가 소문자만 찾는 경우 대비
+    },
 
-  reconnectDelay: 5000,
+    reconnectDelay: 5000,
 
-  // ✅ 여기부터 로그
-  debug: (msg) => {
-    console.log('[STOMP DEBUG]', msg)
-  },
+    debug: (msg) => console.log('[STOMP DEBUG]', msg),
+    onWebSocketClose: (e) => console.log('[WS] close', e.code, e.reason),
+    onWebSocketError: (e) => console.log('[WS] error', e),
+    onStompError: (frame) => console.log('[STOMP ERROR]', frame.headers, frame.body),
 
-  onWebSocketOpen: () => {
-    console.log('[WS] socket opened')
-  },
-
-  onWebSocketClose: (event) => {
-    console.log('[WS] socket closed', event.code, event.reason)
-  },
-
-  onWebSocketError: (event) => {
-    console.log('[WS] socket error', event)
-  },
-
-  onStompError: (frame) => {
-    console.log('[STOMP ERROR]', frame.headers, frame.body)
-  },
-  // ✅ 여기까지 로그
-
-  onConnect: () => {
-    console.log('[WS] connected')
-
-    stompClient.subscribe(
-      `/topic/challenges/${challengeId}`,
-      (frame) => {
+    onConnect: () => {
+      console.log('[WS] connected')
+      stompClient.subscribe(`/topic/challenges/${challengeId}`, (frame) => {
         onMessage(JSON.parse(frame.body))
-      }
-    )
-  },
-})
-
+      })
+    },
+  })
+  
   stompClient.activate()
 }
 
