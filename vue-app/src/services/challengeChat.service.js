@@ -15,11 +15,6 @@ export function connectChallengeChat(challengeId, onMessage) {
     // ✅ WebSocket 대신 SockJS로 연결
     webSocketFactory: () => new SockJS(sockUrl),
 
-    connectHeaders: {
-      Authorization: `Bearer ${token}`,
-      authorization: `Bearer ${token}`, // 서버가 소문자만 찾는 경우 대비
-    },
-
     reconnectDelay: 5000,
 
     debug: (msg) => console.log('[STOMP DEBUG]', msg),
