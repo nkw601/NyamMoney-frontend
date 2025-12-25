@@ -143,7 +143,15 @@
         <!-- 채팅 -->
         <div class="rounded-md border border-border bg-white shadow-sm p-4">
           <h2 class="text-lg font-semibold text-foreground mb-3">채팅</h2>
-          <ChallengeChatView :challenge-id="challengeId" />
+          <div v-if="canViewChat">
+            <ChallengeChatView :challenge-id="challengeId" />
+          </div>
+          <div
+            v-else
+            class="rounded-md border border-dashed border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground text-center"
+          >
+            이 챌린지에 참여한 사용자만 채팅을 확인할 수 있습니다.
+          </div>
         </div>
 
         <div class="flex items-center gap-2 justify-end">
@@ -197,6 +205,7 @@ export default {
     }
 
     const isCreator = computed(() => challenge.value?.userId === authStore.userId)
+    const isAdmin = computed(() => String(authStore.role || '').toUpperCase() === 'ADMIN')
 
     const canJoin = computed(() => {
       if (!challenge.value) return false
@@ -265,6 +274,11 @@ export default {
         return '진행 중인 챌린지입니다.'
       }
       return '참여가 불가능한 챌린지입니다.'
+    })
+
+    const canViewChat = computed(() => {
+      if (!challenge.value) return false
+      return !!(challenge.value.joined || isCreator.value || isAdmin.value)
     })
 
     const statusLabel = computed(() => {
@@ -338,12 +352,14 @@ export default {
       formatDate,
       canJoin,
       canCancel,
+      canViewChat,
       handleJoin,
       handleCancel,
       goEdit,
       goBack,
       goProfile,
       isCreator,
+      isAdmin,
       canDelete,
       handleDelete,
       cannotJoinMessage,
