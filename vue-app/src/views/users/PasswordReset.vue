@@ -49,8 +49,8 @@
               />
             </div>
           </div>
-          <p v-if="resendAvailableAt" class="text-xs text-muted-foreground">
-            다음 전송 가능 시간: {{ formatTime(resendAvailableAt) }} (유효기간 {{ expiresInSeconds }}초)
+          <p v-if="resendAvailableAt && !verified" class="text-xs text-muted-foreground">
+            다음 전송 가능 시간: {{ formatTime(resendAvailableAt) }} (유효기간 {{ displayExpiresIn ?? '-' }}초)
           </p>
         </div>
 
@@ -153,7 +153,7 @@
 </template>
 
 <script>
-import { computed, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import UiButton from '@/components/ui/Button.vue'
 import {
@@ -184,6 +184,12 @@ export default {
     const successMessage = ref('')
     const resendAvailableAt = ref(null)
     const expiresInSeconds = ref(null)
+    const remainingSeconds = ref(null)
+    const countdownTimer = ref(null)
+    const displayExpiresIn = computed(() => {
+      if (verified.value) return null
+      return remainingSeconds.value ?? expiresInSeconds.value ?? null
+    })
 
     const passwordsMatch = computed(() => {
       if (!form.newPassword || !form.newPasswordConfirm) return null
@@ -203,6 +209,29 @@ export default {
       return true
     }
 
+    const stopExpiryCountdown = () => {
+      if (countdownTimer.value) {
+        clearInterval(countdownTimer.value)
+        countdownTimer.value = null
+      }
+    }
+
+    const startExpiryCountdown = (seconds) => {
+      stopExpiryCountdown()
+      if (!seconds) {
+        remainingSeconds.value = null
+        return
+      }
+      remainingSeconds.value = seconds
+      countdownTimer.value = window.setInterval(() => {
+        if (remainingSeconds.value > 0) {
+          remainingSeconds.value -= 1
+        } else {
+          stopExpiryCountdown()
+        }
+      }, 1000)
+    }
+
     const sendCode = async () => {
       clearMessages()
       if (!requiredUserFields()) return
@@ -216,10 +245,11 @@ export default {
         currentStep.value = 2
         verified.value = false
         form.verificationCode = ''
-        resendAvailableAt.value = data?.resendAvailableAt ?? null
-        expiresInSeconds.value = data?.expiresInSeconds ?? null
-        successMessage.value = '인증번호를 전송했습니다. 이메일을 확인하세요.'
-      } catch (err) {
+      resendAvailableAt.value = data?.resendAvailableAt ?? null
+      expiresInSeconds.value = data?.expiresInSeconds ?? null
+      startExpiryCountdown(expiresInSeconds.value)
+      successMessage.value = '인증번호를 전송했습니다. 이메일을 확인하세요.'
+    } catch (err) {
         errorMessage.value = err?.response?.data?.message || '인증번호 전송에 실패했습니다.'
       } finally {
         sendLoading.value = false
@@ -241,15 +271,19 @@ export default {
       verifyLoading.value = true
       try {
         await verifyPasswordResetCode({
-          loginId: form.loginId,
-          verificationCode: form.verificationCode,
-        })
-        verified.value = true
-        currentStep.value = 3
-        successMessage.value = '인증이 완료되었습니다. 새 비밀번호를 입력하세요.'
-      } catch (err) {
-        errorMessage.value = err?.response?.data?.message || '인증번호 확인에 실패했습니다.'
-      } finally {
+      loginId: form.loginId,
+      verificationCode: form.verificationCode,
+    })
+    verified.value = true
+    stopExpiryCountdown()
+    remainingSeconds.value = null
+    expiresInSeconds.value = null
+    resendAvailableAt.value = null
+    currentStep.value = 3
+    successMessage.value = '인증이 완료되었습니다. 새 비밀번호를 입력하세요.'
+  } catch (err) {
+    errorMessage.value = err?.response?.data?.message || '인증번호 확인에 실패했습니다.'
+  } finally {
         verifyLoading.value = false
       }
     }
@@ -288,6 +322,10 @@ export default {
       return date.toLocaleTimeString()
     }
 
+    onBeforeUnmount(() => {
+      stopExpiryCountdown()
+    })
+
     return {
       form,
       currentStep,
@@ -299,6 +337,8 @@ export default {
       successMessage,
       resendAvailableAt,
       expiresInSeconds,
+      remainingSeconds,
+      displayExpiresIn,
       passwordsMatch,
       sendCode,
       verifyCode,
