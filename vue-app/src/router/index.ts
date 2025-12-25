@@ -21,12 +21,14 @@ import ChallengeListView from '../views/challenges/ChallengeListView.vue'
 import TransactionCreateView from '../views/TransactionCreateView.vue'
 import TransactionDetailView from '../views/TransactionDetailView.vue'
 import TransactionEditView from '../views/TransactionEditView.vue'
+import PasswordReset from '../views/users/PasswordReset.vue'
 
 const routes = [
   { path: '/', redirect: '/dashboard' },
   { path: '/login', name: 'Login', component: Login },
   { path: '/signup', name: 'Signup', component: Signup },
   { path: '/help', name: 'Help', component: Help },
+  { path: '/password-reset', name: 'PasswordReset', component: PasswordReset },
 
   { path: '/dashboard', name: 'Dashboard', component: Home, meta: { requiresAuth: true } },
   { path: '/me', name: 'Me', component: Me, meta: { requiresAuth: true } },
