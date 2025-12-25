@@ -1,6 +1,7 @@
 import { Client } from '@stomp/stompjs'
 import Cookies from 'js-cookie'
 import api from '@/api/axios'
+import SockJS from 'sockjs-client'
 
 let stompClient = null
 
@@ -33,7 +34,7 @@ export function connectChallengeChat(challengeId, onMessage) {
       })
     },
   })
-  
+
   stompClient.activate()
 }
 
