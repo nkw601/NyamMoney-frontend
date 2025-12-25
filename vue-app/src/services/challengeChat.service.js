@@ -10,6 +10,7 @@ export function connectChallengeChat(challengeId, onMessage) {
   const wsUrl = 'wss://api.nyammoney.kr/ws-challenge-chat'
 
   stompClient = new Client({
+    console.log('accessToken=', Cookies.get('accessToken'))
     webSocketFactory: () =>
       new WebSocket(wsUrl),
 
