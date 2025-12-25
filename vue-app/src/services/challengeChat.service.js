@@ -10,27 +10,47 @@ export function connectChallengeChat(challengeId, onMessage) {
   const wsUrl = 'wss://api.nyammoney.kr/ws-challenge-chat'
 
   stompClient = new Client({
-    console.log('accessToken=', Cookies.get('accessToken'))
-    webSocketFactory: () =>
-      new WebSocket(wsUrl),
+  webSocketFactory: () => new WebSocket(wsUrl),
 
-    connectHeaders: {
-      Authorization: `Bearer ${token}`
-    },
+  connectHeaders: {
+    Authorization: `Bearer ${token}`,
+  },
 
-    reconnectDelay: 5000,
+  reconnectDelay: 5000,
 
-    onConnect: () => {
-      console.log('[WS] connected')
+  // ✅ 여기부터 로그
+  debug: (msg) => {
+    console.log('[STOMP DEBUG]', msg)
+  },
 
-      stompClient.subscribe(
-        `/topic/challenges/${challengeId}`,
-        (frame) => {
-          onMessage(JSON.parse(frame.body))
-        }
-      )
-    }
-  })
+  onWebSocketOpen: () => {
+    console.log('[WS] socket opened')
+  },
+
+  onWebSocketClose: (event) => {
+    console.log('[WS] socket closed', event.code, event.reason)
+  },
+
+  onWebSocketError: (event) => {
+    console.log('[WS] socket error', event)
+  },
+
+  onStompError: (frame) => {
+    console.log('[STOMP ERROR]', frame.headers, frame.body)
+  },
+  // ✅ 여기까지 로그
+
+  onConnect: () => {
+    console.log('[WS] connected')
+
+    stompClient.subscribe(
+      `/topic/challenges/${challengeId}`,
+      (frame) => {
+        onMessage(JSON.parse(frame.body))
+      }
+    )
+  },
+})
 
   stompClient.activate()
 }
